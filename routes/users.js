@@ -1,29 +1,30 @@
 const express = require('express');
 const User = require('../models/user');
 const passport = require('passport');
+const authenticate = require('../authenticate');
 
 const router = express.Router();
 
 /* GET users listing. */
-router.get('/', function(req, res, next) {
+router.get('/', function (req, res, next) {
     res.send('respond with a resource');
 });
 
 
 router.post('/signup', (req, res) => {
     User.register(
-        new User({username: req.body.username}),
+        new User({ username: req.body.username }),
         req.body.password,
         err => {
             if (err) {
                 res.statusCode = 500;
                 res.setHeader('Content-Type', 'application/json');
-                res.json({err: err});
+                res.json({ err: err });
             } else {
                 passport.authenticate('local')(req, res, () => {
                     res.statusCode = 200;
                     res.setHeader('Content-Type', 'application/json');
-                    res.json({success: true, status: 'Registration Successful!'});
+                    res.json({ success: true, status: 'Registration Successful!' });
                 });
             }
         }
@@ -31,10 +32,17 @@ router.post('/signup', (req, res) => {
 });
 
 router.post('/login', passport.authenticate('local'), (req, res) => {
+    const token = authenticate.getToken({ _id: req.user._id });
     res.statusCode = 200;
     res.setHeader('Content-Type', 'application/json');
-    res.json({success: true, status: 'You are successfully logged in!'});
+    res.json({ success: true, token: token, status: 'You are successfully logged in!' });
 });
+
+// router.post('/login', passport.authenticate('local'), (req, res) => {
+//     res.statusCode = 200;
+//     res.setHeader('Content-Type', 'application/json');
+//     res.json({success: true, status: 'You are successfully logged in!'});
+// });
 
 //Using sessions instead:
 // router.post('/signup', (req, res, next) => {
@@ -69,11 +77,11 @@ router.post('/login', passport.authenticate('local'), (req, res) => {
 //             err.status = 401;
 //             return next(err);
 //         }
-      
+
 //         const auth = Buffer.from(authHeader.split(' ')[1], 'base64').toString().split(':');
 //         const username = auth[0];
 //         const password = auth[1];
-      
+
 //         User.findOne({username: username})
 //         .then(user => {
 //             if (!user) {
