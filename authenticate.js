@@ -40,3 +40,5 @@ exports.jwtPassport = passport.use(
 );
 
 exports.verifyUser = passport.authenticate('jwt', { session: false });
+//temporary
+exports.verifyAdmin = passport.authenticate('jwt', { session: false });
