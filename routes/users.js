@@ -6,8 +6,19 @@ const authenticate = require('../authenticate');
 const router = express.Router();
 
 /* GET users listing. */
-router.get('/', function (req, res, next) {
+router.get('/', authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     res.send('respond with a resource');
+    User.find()
+        .then((users) => {
+            res.statusCode = 500;
+            res.setHeader('Content-Type', 'application/json');
+            res.json(users);
+            return;
+        })
+        .catch((err) => {
+            next(err);
+            return;
+        })
 });
 
 
@@ -21,17 +32,17 @@ router.post('/signup', (req, res) => {
                 res.setHeader('Content-Type', 'application/json');
                 res.json({ err: err });
             } else {
-                if (req.body.firstname){
+                if (req.body.firstname) {
                     user.firstname = req.body.firstname;
                 };
-                if (req.body.lastname){
+                if (req.body.lastname) {
                     user.lastname = req.body.lastname;
                 };
-                user.save(err=>{
-                    if (err){
+                user.save(err => {
+                    if (err) {
                         res.statusCode = 500;
-                        res.setHeader('Content-Type','application/json');
-                        res.json({err: err});
+                        res.setHeader('Content-Type', 'application/json');
+                        res.json({ err: err });
                         return;
                     }
                     passport.authenticate('local')(req, res, () => {
@@ -45,17 +56,17 @@ router.post('/signup', (req, res) => {
     );
 });
 
-router.post('/login',  (req, res) => {
-    passport.authenticate('local',(err,user,info)=>{
-        if(user){
+router.post('/login', (req, res) => {
+    passport.authenticate('local', (err, user, info) => {
+        if (user) {
             const token = authenticate.getToken({ _id: user._id });
             res.statusCode = 200;
             res.setHeader('Content-Type', 'application/json');
             res.json({ success: true, token: token, status: 'You are successfully logged in!' });
-        }else{
+        } else {
             res.send('Unauthorized');
         }
-    })(req,res);
+    })(req, res);
 });
 
 // router.post('/login', passport.authenticate('local'), (req, res) => {
