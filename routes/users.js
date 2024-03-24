@@ -45,11 +45,17 @@ router.post('/signup', (req, res) => {
     );
 });
 
-router.post('/login', passport.authenticate('local'), (req, res) => {
-    const token = authenticate.getToken({ _id: req.user._id });
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'application/json');
-    res.json({ success: true, token: token, status: 'You are successfully logged in!' });
+router.post('/login',  (req, res) => {
+    passport.authenticate('local',(err,user,info)=>{
+        if(user){
+            const token = authenticate.getToken({ _id: user._id });
+            res.statusCode = 200;
+            res.setHeader('Content-Type', 'application/json');
+            res.json({ success: true, token: token, status: 'You are successfully logged in!' });
+        }else{
+            res.send('Unauthorized');
+        }
+    })(req,res);
 });
 
 // router.post('/login', passport.authenticate('local'), (req, res) => {
